@@ -129,52 +129,58 @@ func TestE2ERestart(t *testing.T) {
 func TestE2ERestartConsul(t *testing.T) {
 	setParallelism(t)
 
-	consul := testutils.NewTestConsulServer(t, testutils.TestConsulServerConfig{
-		HTTPSRelPath: "../testutils",
-	})
+	for i := 0; i < 10; i++ { // looping because the issue is intermittent
+		consul := testutils.NewTestConsulServer(t, testutils.TestConsulServerConfig{
+			HTTPSRelPath: "../testutils",
+		})
 
-	tempDir := fmt.Sprintf("%s%s", tempDirPrefix, "restart_consul")
-	cleanup := testutils.MakeTempDir(t, tempDir) // cleanup at end if no errors
+		tempDir := fmt.Sprintf("%s%s", tempDirPrefix, "restart_consul")
+		cleanup := testutils.MakeTempDir(t, tempDir) // cleanup at end if no errors
 
-	configPath := filepath.Join(tempDir, configFile)
-	config := baseConfig(tempDir).appendConsulBlock(consul).
-		appendTerraformBlock().appendDBTask()
-	config.write(t, configPath)
+		configPath := filepath.Join(tempDir, configFile)
+		config := baseConfig(tempDir).appendConsulBlock(consul).
+			appendTerraformBlock().appendDBTask()
+		config.write(t, configPath)
 
-	// start CTS
-	cts, stop := api.StartCTS(t, configPath)
-	defer stop(t)
-	// wait enough for cts to cycle through once-mode successfully
-	err := cts.WaitForAPI(defaultWaitForAPI)
-	require.NoError(t, err)
+		// start CTS
+		cts, stop := api.StartCTS(t, configPath)
+		// Registering a service, forcing the bug seen with earlier version of self-registration code
+		testutils.RegisterConsulService(t, consul,
+			testutil.TestService{ID: "fake", Name: "fake"}, defaultWaitForRegistration)
+		defer stop(t)
 
-	// stop Consul
-	err = consul.Stop()
-	// When Consul is killed with a SIGINT, it exists with error code 1, this error is expected
-	require.Error(t, err)
-	exitErr, ok := err.(*exec.ExitError)
-	require.True(t, ok)
-	require.Equal(t, 1, exitErr.ExitCode())
+		// wait enough for cts to cycle through once-mode successfully
+		err := cts.WaitForAPI(defaultWaitForAPI)
+		require.NoError(t, err)
 
-	// restart Consul
-	consul = testutils.NewTestConsulServer(t, testutils.TestConsulServerConfig{
-		HTTPSRelPath: "../testutils",
-		PortHTTPS:    consul.Config.Ports.HTTPS,
-	})
-	defer consul.Stop()
-	time.Sleep(5 * time.Second)
+		// stop Consul
+		err = consul.Stop()
+		// When Consul is killed with a SIGINT, it exists with error code 1, this error is expected
+		require.Error(t, err)
+		exitErr, ok := err.(*exec.ExitError)
+		require.True(t, ok)
+		require.Equal(t, 1, exitErr.ExitCode())
 
-	// register a new service
-	now := time.Now()
-	apiInstance := testutil.TestService{ID: "api_new", Name: "api"}
-	testutils.RegisterConsulService(t, consul, apiInstance, defaultWaitForRegistration)
-	api.WaitForEvent(t, cts, dbTaskName, now, defaultWaitForEvent)
+		// restart Consul
+		consul = testutils.NewTestConsulServer(t, testutils.TestConsulServerConfig{
+			HTTPSRelPath: "../testutils",
+			PortHTTPS:    consul.Config.Ports.HTTPS,
+		})
+		defer consul.Stop()
+		time.Sleep(5 * time.Second)
 
-	// confirm that CTS reconnected with Consul and created resource for latest service
-	resourcesPath := filepath.Join(tempDir, dbTaskName, resourcesDir)
-	testutils.CheckFile(t, true, resourcesPath, "api_new.txt")
+		// register a new service
+		now := time.Now()
+		apiInstance := testutil.TestService{ID: "api_new", Name: "api"}
+		testutils.RegisterConsulService(t, consul, apiInstance, defaultWaitForRegistration)
+		api.WaitForEvent(t, cts, dbTaskName, now, defaultWaitForEvent)
 
-	_ = cleanup()
+		// confirm that CTS reconnected with Consul and created resource for latest service
+		resourcesPath := filepath.Join(tempDir, dbTaskName, resourcesDir)
+		testutils.CheckFile(t, true, resourcesPath, "api_new.txt")
+
+		_ = cleanup()
+	}
 }
 
 // TestE2ELocalBackend tests CTS configured with the Terraform driver using
