@@ -31,6 +31,7 @@ function split_list() {
 
 function join_lists() {
   local chunks_dir=$1
+
   local joined
 
   for f in "${chunks_dir}"/*; do
@@ -41,6 +42,7 @@ function join_lists() {
 
 function validate() {
   local chunks_count=$1
+
   if [ "${chunks_count}" -gt 10 ]; then
     >&2 echo ">> ERROR: Chunks count (${chunks_count}) exceeded max value (10)"
     exit 1
