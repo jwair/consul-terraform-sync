@@ -195,7 +195,7 @@ jobs:
       - checkout
       - run: make go-fmt-check
       - run:
-          name: verify go.mod and go.sum are correct
+          name: Verify go.mod and go.sum are correct
           command: |
             go mod tidy
             git diff --quiet && exit 0
@@ -218,7 +218,7 @@ workflows:
       - compile-weekly-tests
       - unit-integration-tests
       - e2e-tests:
-          name: e2e-tests-<< matrix.part_index >>
+          name: "E2E Tests - Part: << matrix.part_index >>"
           matrix:
             parameters:
               part_index: [ 0, 1, 2 ]
