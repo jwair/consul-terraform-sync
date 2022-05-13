@@ -88,10 +88,11 @@ jobs:
           tar -xzf gotestsum.tar.gz gotestsum
           sudo cp gotestsum /usr/local/bin/
       - run: |
+          ./build-scripts/split-tests.sh e2e ./e2e "${CIRCLE_NODE_TOTAL}" ${PWD}/.build/chunks
+      - run: |
           make test-e2e-cirecleci
       - store_test_results:
           path: .build/test-results/e2e-tests-chunk-${CIRCLE_NODE_INDEX}.xml
-          ./build-scripts/split-tests.sh e2e ./e2e "${CIRCLE_NODE_TOTAL}" ${PWD}/.build/chunks
       - run: |
           CHUNK_INDEX=${CIRCLE_NODE_INDEX} make test-e2e-cirecleci
       - when:
