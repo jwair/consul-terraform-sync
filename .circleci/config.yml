@@ -58,10 +58,6 @@ jobs:
                 event: fail
                 template: basic_fail_1
                 branch_pattern: main,release/.+
-      - save_cache:
-          key: ct-modcache-v2-{{ checksum "go.mod" }}
-          paths:
-            - /go/pkg/mod
 
   vault_integration_tests:
     executor:
@@ -80,10 +76,6 @@ jobs:
             vault version
       - run: |
           go test -count=1 -timeout=80s -tags 'integration vault' ./... -run Vault
-      - save_cache:
-          key: ct-modcache-v2-{{ checksum "go.mod" }}
-          paths:
-            - /go/pkg/mod
 
   e2e_tests_part_1:
     executor:
@@ -197,10 +189,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - save_cache:
-          key: ct-modcache-v2-{{ checksum "go.mod" }}
-          paths:
-            - /go/pkg/mod
 
   benchmarks:
     executor:
@@ -277,10 +265,6 @@ jobs:
                 event: fail
                 template: basic_fail_1
                 branch_pattern: main,release/.+
-      - save_cache:
-          key: ct-modcache-v2-{{ checksum "go.mod" }}
-          paths:
-            - /go/pkg/mod
 
   go-checks:
     executor:
@@ -295,7 +279,6 @@ jobs:
             git diff --quiet && exit 0
             echo "please run 'go mod tidy' to ensure go.mod and go.sum are up to date"
             exit 1
-
 
   terraform-checks:
     executor:
@@ -317,8 +300,12 @@ workflows:
       - refresh-cache
       - go-checks
       - terraform-checks
-      - compile_weekly_tests
-      - unit_integration_tests
+      - compile_weekly_tests:
+          requires:
+            - refresh-cache
+      - unit_integration_tests:
+          requires:
+            - refresh-cache
       - e2e_tests_part_1:
           requires:
             - refresh-cache
@@ -330,9 +317,14 @@ workflows:
             - refresh-cache
   weekly-benchmarks:
     jobs:
-      - vault_integration_tests
+      - refresh-cache
       - benchmarks
-      - consul_compatibility_tests
+      - vault_integration_tests:
+          requires:
+            - refresh-cache
+      - consul_compatibility_tests:
+          requires:
+            - refresh-cache
     triggers:
       - schedule:
           # 02:10 UTC every Wednesday
