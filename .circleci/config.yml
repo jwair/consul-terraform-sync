@@ -18,16 +18,43 @@ executors:
       GOTESTSUM_VERSION: "1.8.1"
       E2E_TESTS_PARALLELISM: 3
 
+commands:
+  setup-consul:
+    steps:
+      - run: |
+          curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
+          unzip consul.zip
+          sudo cp consul /usr/local/bin/
+
+  setup-terraform:
+    steps:
+      - run: |
+          curl -sLo terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+          unzip terraform.zip
+          sudo cp terraform /usr/local/bin/
+
+  setup-vault:
+    steps:
+      - run: |
+          curl -sLo vault.zip https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip
+          unzip vault.zip
+          sudo cp vault /usr/local/bin/
+          vault version
+
+  setup-gotestsum:
+    steps:
+      - run: |
+          curl -sLo gotestsum.tar.gz https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_linux_amd64.tar.gz
+            tar -xzf gotestsum.tar.gz gotestsum
+            sudo cp gotestsum /usr/local/bin/
+
 jobs:
   unit-integration-tests:
     executor:
       name: go
     steps:
       - checkout
-      - run: |
-          curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
-          unzip consul.zip
-          sudo cp consul /usr/local/bin/
+      - setup-consul
       - run: |
           make test-integration
       - when:
@@ -46,13 +73,7 @@ jobs:
       name: go
     steps:
       - checkout
-      - run:
-          name: Install Vault
-          command: |
-            curl -sLo vault.zip https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip
-            unzip vault.zip
-            sudo cp vault /usr/local/bin/
-            vault version
+      - setup-vault
       - run: |
           go test -count=1 -timeout=80s -tags 'integration vault' ./... -run Vault
 
@@ -65,16 +86,8 @@ jobs:
         type: integer
     steps:
       - checkout
-      - run:
-          name: Setup dependencies
-          command: |
-            curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
-            unzip consul.zip
-            sudo cp consul /usr/local/bin/
-            
-            curl -sLo gotestsum.tar.gz https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_linux_amd64.tar.gz
-            tar -xzf gotestsum.tar.gz gotestsum
-            sudo cp gotestsum /usr/local/bin/
+      - setup-consul
+      - setup-gotestsum
       - run:
           name: E2E tests
           command: |
@@ -114,18 +127,8 @@ jobs:
         default: 30m
     steps:
       - checkout
-      - run:
-          name: Install Consul
-          command: |
-            curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
-            unzip consul.zip
-            sudo cp consul /usr/local/bin/
-      - run:
-          name: Install Terraform
-          command: |
-            curl -sLo terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
-            unzip terraform.zip
-            sudo cp terraform /usr/local/bin/
+      - setup-consul
+      - setup-terraform
       - run:
           name: Copy terraform to benchmark directory
           command: /bin/cp /usr/local/bin/terraform ./e2e/
@@ -196,12 +199,7 @@ jobs:
       name: go
     steps:
       - checkout
-      - run:
-          name: Install Terraform
-          command: |
-            curl -sLo terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
-            unzip terraform.zip
-            sudo cp terraform /usr/local/bin/
+      - setup-terraform
       - run: make terraform-fmt-check
 
 workflows:
