@@ -23,7 +23,7 @@ function split_list() {
     ((lines_per_file = (total_lines + chunks_count - 1) / chunks_count))
 
     echo ">> Tests total count: ${total_lines}"
-    mkdir -p "${chunks_dir}"
+    mkdir -p "${output_dir}"
     split -d -a 1 -l "${lines_per_file}" "${input_file}" "${output_dir}/chunk."
     echo ">> Chunks files line counts:"
     wc -l "${output_dir}"/*
