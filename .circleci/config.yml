@@ -86,17 +86,21 @@ jobs:
       - restore_cache:
           keys:
             - ct-modcache-v2-{{ checksum "go.mod" }}
-      - run: |
-          curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
-          unzip consul.zip
-          sudo cp consul /usr/local/bin/
-      - run: |
-          curl -sLo gotestsum.tar.gz https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_linux_amd64.tar.gz
-          tar -xzf gotestsum.tar.gz gotestsum
-          sudo cp gotestsum /usr/local/bin/
-      - run: |
-          ./build-scripts/split-tests.sh e2e ./e2e ${E2E_TESTS_PARALLELISM} ${PWD}/.build/chunks
-          CHUNK_INDEX=0 make test-e2e-cirecleci
+      - run:
+          name: Setup dependencies
+          command: |
+            curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
+            unzip consul.zip
+            sudo cp consul /usr/local/bin/
+            
+            curl -sLo gotestsum.tar.gz https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_linux_amd64.tar.gz
+            tar -xzf gotestsum.tar.gz gotestsum
+            sudo cp gotestsum /usr/local/bin/
+      - run:
+          name: E2E tests
+          command: |
+            ./build-scripts/split-tests.sh e2e ./e2e ${E2E_TESTS_PARALLELISM} ${PWD}/.build/chunks
+            CHUNK_INDEX=0 make test-e2e-cirecleci
       - store_test_results:
           path: .build/test-results
       - when:
@@ -119,17 +123,21 @@ jobs:
       - restore_cache:
           keys:
             - ct-modcache-v2-{{ checksum "go.mod" }}
-      - run: |
-          curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
-          unzip consul.zip
-          sudo cp consul /usr/local/bin/
-      - run: |
-          curl -sLo gotestsum.tar.gz https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_linux_amd64.tar.gz
-          tar -xzf gotestsum.tar.gz gotestsum
-          sudo cp gotestsum /usr/local/bin/
-      - run: |
-          ./build-scripts/split-tests.sh e2e ./e2e ${E2E_TESTS_PARALLELISM} ${PWD}/.build/chunks
-          CHUNK_INDEX=1 make test-e2e-cirecleci
+      - run:
+          name: Setup dependencies
+          command: |
+            curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
+            unzip consul.zip
+            sudo cp consul /usr/local/bin/
+            
+            curl -sLo gotestsum.tar.gz https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_linux_amd64.tar.gz
+            tar -xzf gotestsum.tar.gz gotestsum
+            sudo cp gotestsum /usr/local/bin/
+      - run:
+          name: E2E tests
+          command: |
+            ./build-scripts/split-tests.sh e2e ./e2e ${E2E_TESTS_PARALLELISM} ${PWD}/.build/chunks
+            CHUNK_INDEX=1 make test-e2e-cirecleci
       - store_test_results:
           path: .build/test-results
       - when:
@@ -152,17 +160,21 @@ jobs:
       - restore_cache:
           keys:
             - ct-modcache-v2-{{ checksum "go.mod" }}
-      - run: |
-          curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
-          unzip consul.zip
-          sudo cp consul /usr/local/bin/
-      - run: |
-          curl -sLo gotestsum.tar.gz https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_linux_amd64.tar.gz
-          tar -xzf gotestsum.tar.gz gotestsum
-          sudo cp gotestsum /usr/local/bin/
-      - run: |
-          ./build-scripts/split-tests.sh e2e ./e2e ${E2E_TESTS_PARALLELISM} ${PWD}/.build/chunks
-          CHUNK_INDEX=2 make test-e2e-cirecleci
+      - run:
+          name: Setup dependencies
+          command: |
+            curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
+            unzip consul.zip
+            sudo cp consul /usr/local/bin/
+            
+            curl -sLo gotestsum.tar.gz https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_linux_amd64.tar.gz
+            tar -xzf gotestsum.tar.gz gotestsum
+            sudo cp gotestsum /usr/local/bin/
+      - run:
+          name: E2E tests
+          command: |
+            ./build-scripts/split-tests.sh e2e ./e2e ${E2E_TESTS_PARALLELISM} ${PWD}/.build/chunks
+            CHUNK_INDEX=2 make test-e2e-cirecleci
       - store_test_results:
           path: .build/test-results
       - when:
