@@ -8,7 +8,7 @@ function list_tests() {
     local build_tags=$1
     local pkg=$2
 
-    go test -tags="${build_tags}" -list . "${pkg}" | grep "^Test" | sort -R
+    go test -tags="${build_tags}" -list . "${pkg}" | grep "^Test" | sort
 }
 
 function split_list() {
