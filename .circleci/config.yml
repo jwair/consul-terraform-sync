@@ -92,7 +92,7 @@ jobs:
       - run: |
           CHUNK_INDEX=${CIRCLE_NODE_INDEX} make test-e2e-cirecleci
       - store_test_results:
-          path: .build/test-results/e2e-tests-chunk-${CIRCLE_NODE_INDEX}.xml
+          path: .build/test-results
       - when:
           condition:
             or:
