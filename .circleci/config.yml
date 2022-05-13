@@ -70,7 +70,7 @@ jobs:
           paths:
             - /go/pkg/mod
 
-  e2e_tests_1:
+  e2e_tests_part_1:
     executor:
       name: go
     resource_class: medium+
@@ -107,7 +107,7 @@ jobs:
           paths:
             - /go/pkg/mod
 
-  e2e_tests_2:
+  e2e_tests_part_2:
     executor:
       name: go
     resource_class: medium+
@@ -144,7 +144,7 @@ jobs:
           paths:
             - /go/pkg/mod
 
-  e2e_tests_3:
+  e2e_tests_part_3:
     executor:
       name: go
     resource_class: medium+
@@ -314,9 +314,9 @@ workflows:
       - terraform-checks
       - compile_weekly_tests
       - unit_integration_tests
-      - e2e_tests_1
-      - e2e_tests_2
-      - e2e_tests_3
+      - e2e_tests_part_1
+      - e2e_tests_part_2
+      - e2e_tests_part_3
   weekly-benchmarks:
     jobs:
       - vault_integration_tests
