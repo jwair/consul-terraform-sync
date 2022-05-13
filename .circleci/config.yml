@@ -81,6 +81,9 @@ jobs:
     executor:
       name: go
     resource_class: medium+
+    parameters:
+      part:
+        type: string
     steps:
       - checkout
       - restore_cache:
