@@ -77,7 +77,7 @@ jobs:
       - run: |
           go test -count=1 -timeout=80s -tags 'integration vault' ./... -run Vault
 
-  e2e_tests:
+  e2e-tests:
     executor:
       name: go
     resource_class: medium+
@@ -86,9 +86,9 @@ jobs:
         type: string
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - ct-modcache-v2-{{ checksum "go.mod" }}
+#      - restore_cache:
+#          keys:
+#            - ct-modcache-v2-{{ checksum "go.mod" }}
       - run:
           name: Setup dependencies
           command: |
@@ -246,7 +246,7 @@ workflows:
       - unit_integration_tests:
           requires:
             - refresh-cache
-      - e2e_tests:
+      - e2e-tests:
           requires:
             - refresh-cache
           matrix:
