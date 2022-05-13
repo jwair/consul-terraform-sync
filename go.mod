@@ -31,7 +31,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
 	github.com/hashicorp/go-rootcerts v1.0.2
 	github.com/hashicorp/go-syslog v1.0.0
-	github.com/hashicorp/go-uuid v1.0.2
+	github.com/hashicorp/go-uuid v1.0.3
 	github.com/hashicorp/go-version v1.3.0
 	github.com/hashicorp/hcat v0.2.1-0.20220425195220-6cc4c61e1ba1
 	github.com/hashicorp/hcl v1.0.1-vault-2
