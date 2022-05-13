@@ -69,11 +69,10 @@ jobs:
           paths:
             - /go/pkg/mod
 
-  e2e_tests:
+  e2e_tests_1:
     executor:
       name: go
     resource_class: medium+
-    parallelism: 4
     steps:
       - checkout
       - restore_cache:
@@ -88,11 +87,47 @@ jobs:
           tar -xzf gotestsum.tar.gz gotestsum
           sudo cp gotestsum /usr/local/bin/
       - run: |
-          ./build-scripts/split-tests.sh e2e ./e2e "${CIRCLE_NODE_TOTAL}" ${PWD}/.build/chunks
-      - run: |
-          CHUNK_INDEX=${CIRCLE_NODE_INDEX} make test-e2e-cirecleci
+          ./build-scripts/split-tests.sh e2e ./e2e 2 ${PWD}/.build/chunks
+          CHUNK_INDEX=0 make test-e2e-cirecleci
       - store_test_results:
-          path: .build/test-results
+          path: .build/test-results/e2e-tests-0.xml
+      - when:
+          condition:
+            or:
+              - equal: [ main, <<pipeline.git.branch>> ]
+              - matches: { pattern: "release/.+", value: <<pipeline.git.branch>> }
+          steps:
+            - slack/notify:
+                event: fail
+                template: basic_fail_1
+                branch_pattern: main,release/.+
+      - save_cache:
+          key: ct-modcache-v2-{{ checksum "go.mod" }}
+          paths:
+            - /go/pkg/mod
+
+  e2e_tests_2:
+    executor:
+      name: go
+    resource_class: medium+
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - ct-modcache-v2-{{ checksum "go.mod" }}
+      - run: |
+          curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
+          unzip consul.zip
+          sudo cp consul /usr/local/bin/
+      - run: |
+          curl -sLo gotestsum.tar.gz https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_linux_amd64.tar.gz
+          tar -xzf gotestsum.tar.gz gotestsum
+          sudo cp gotestsum /usr/local/bin/
+      - run: |
+          ./build-scripts/split-tests.sh e2e ./e2e 2 ${PWD}/.build/chunks
+          CHUNK_INDEX=1 make test-e2e-cirecleci
+      - store_test_results:
+          path: .build/test-results/e2e-tests-1.xml
       - when:
           condition:
             or:
@@ -241,7 +276,8 @@ workflows:
       - terraform-checks
       - compile_weekly_tests
       - unit_integration_tests
-      - e2e_tests
+      - e2e_tests_1
+      - e2e_tests_2
   weekly-benchmarks:
     jobs:
       - vault_integration_tests
