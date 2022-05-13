@@ -89,6 +89,7 @@ jobs:
           sudo cp gotestsum /usr/local/bin/
       - run: |
           ./build-scripts/split-tests.sh e2e ./e2e "${CIRCLE_NODE_TOTAL}" ${PWD}/.build/chunks
+          ls -l ${PWD}/.build/chunks
       - run: |
           CHUNK_INDEX=${CIRCLE_NODE_INDEX} make test-e2e-cirecleci
       - store_test_results:
