@@ -57,7 +57,7 @@ commands:
             sudo cp gotestsum /usr/local/bin/
 
 jobs:
-  unit-integration-tests:
+  integration-tests:
     executor:
       name: go
     steps:
@@ -84,6 +84,30 @@ jobs:
       - setup-vault
       - run: |
           go test -count=1 -timeout=80s -tags 'integration vault' ./... -run Vault
+
+  unit-tests:
+    executor:
+      name: go
+    steps:
+      - checkout
+      - setup-consul
+      - setup-gotestsum
+      - run:
+          name: Unit tests
+          command: |
+            make test-unit-cirecleci
+      - store_test_results:
+          path: .build/test-results
+      - when:
+          condition:
+            or:
+              - equal: [ main, <<pipeline.git.branch>> ]
+              - matches: { pattern: "release/.+", value: <<pipeline.git.branch>> }
+          steps:
+            - slack/notify:
+                event: fail
+                template: basic_fail_1
+                branch_pattern: main,release/.+
 
   e2e-tests:
     executor:
@@ -216,7 +240,8 @@ workflows:
       - go-checks
       - terraform-checks
       - compile-weekly-tests
-      - unit-integration-tests
+      - unit-tests
+      - integration-tests
       - e2e-tests:
           name: "E2E Tests - Part: << matrix.part_index >>"
           matrix:

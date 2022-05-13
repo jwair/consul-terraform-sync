@@ -60,6 +60,11 @@ test-e2e-cirecleci: test-setup-e2e
 		./e2e -race -count=1 -timeout=600s -tags=e2e -run="$(shell cat ".build/chunks/chunk.${CHUNK_INDEX}")" ${TESTARGS}
 .PHONY: test-e2e-cirecleci
 
+test-unit-cirecleci:
+	@echo "==> Testing ${NAME} (unit tests)"
+	@gotestsum --format testname --junitfile .build/test-results/unit-tests.xml -- ./... -count=1 -timeout=60s ${TESTARGS}
+.PHONY: test-unit-cirecleci
+
 # test-e2e-local does e2e test setup and then runs the e2e tests
 test-e2e-local: test-setup-e2e
 	@echo "==> Testing ${NAME} (e2e)"
