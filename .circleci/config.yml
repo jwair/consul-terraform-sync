@@ -28,12 +28,11 @@ jobs:
           keys:
             - ct-modcache-v2-{{ checksum "go.mod" }}
       - run: |
-          echo $GOPATH
           go mod download
       - save_cache:
           key: ct-modcache-v2-{{ checksum "go.mod" }}
           paths:
-            - /go/pkg/mod
+            - /home/circleci/go/pkg/mod
 
   unit_integration_tests:
     executor:
@@ -296,6 +295,7 @@ jobs:
             git diff --quiet && exit 0
             echo "please run 'go mod tidy' to ensure go.mod and go.sum are up to date"
             exit 1
+
 
   terraform-checks:
     executor:
