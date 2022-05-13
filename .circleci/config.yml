@@ -19,29 +19,11 @@ executors:
       E2E_TESTS_PARALLELISM: "3"
 
 jobs:
-  refresh-cache:
+  unit-integration-tests:
     executor:
       name: go
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - ct-modcache-v2-{{ checksum "go.mod" }}
-      - run: |
-          go mod download
-      - save_cache:
-          key: ct-modcache-v2-{{ checksum "go.mod" }}
-          paths:
-            - /home/circleci/go/pkg/mod
-
-  unit_integration_tests:
-    executor:
-      name: go
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - ct-modcache-v2-{{ checksum "go.mod" }}
       - run: |
           curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
           unzip consul.zip
@@ -59,14 +41,11 @@ jobs:
                 template: basic_fail_1
                 branch_pattern: main,release/.+
 
-  vault_integration_tests:
+  vault-integration-tests:
     executor:
       name: go
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - ct-modcache-v2-{{ checksum "go.mod" }}
       - run:
           name: Install Vault
           command: |
@@ -82,13 +61,12 @@ jobs:
       name: go
     resource_class: medium+
     parameters:
-      part:
+      part_index:
+        type: string
+      parts_total:
         type: string
     steps:
       - checkout
-#      - restore_cache:
-#          keys:
-#            - ct-modcache-v2-{{ checksum "go.mod" }}
       - run:
           name: Setup dependencies
           command: |
@@ -102,8 +80,8 @@ jobs:
       - run:
           name: E2E tests
           command: |
-            ./build-scripts/split-tests.sh e2e ./e2e ${E2E_TESTS_PARALLELISM} ${PWD}/.build/chunks
-            CHUNK_INDEX=<< parameters.part >> make test-e2e-cirecleci
+            ./build-scripts/split-tests.sh e2e ./e2e << parameters.parts_total >> ${PWD}/.build/chunks
+            CHUNK_INDEX=<< parameters.part_index >> make test-e2e-cirecleci
       - store_test_results:
           path: .build/test-results
       - when:
@@ -117,14 +95,11 @@ jobs:
                 template: basic_fail_1
                 branch_pattern: main,release/.+
 
-  consul_compatibility_tests:
+  consul-compatibility-tests:
     executor:
       name: go
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - ct-modcache-v2-{{ checksum "go.mod" }}
       - run: |
           make test-compat
       - slack/notify:
@@ -184,14 +159,11 @@ jobs:
           path: /tmp/benchmark_results
           destination: benchmark_results
 
-  compile_weekly_tests:
+  compile-weekly-tests:
     executor:
       name: go
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - ct-modcache-v2-{{ checksum "go.mod" }}
       - run:
           name: Check that weekly tests can compile
           command:
@@ -237,31 +209,20 @@ jobs:
 workflows:
   build-test:
     jobs:
-      - refresh-cache
       - go-checks
       - terraform-checks
-      - compile_weekly_tests:
-          requires:
-            - refresh-cache
-      - unit_integration_tests:
-          requires:
-            - refresh-cache
+      - compile-weekly-tests
+      - unit-integration-tests
       - e2e-tests:
-          requires:
-            - refresh-cache
           matrix:
             parameters:
-              part: [ "0", "1", "2" ]
+              part_index: [ "0", "1", "2" ]
+              totals_total: [ "3" ]
   weekly-benchmarks:
     jobs:
-      - refresh-cache
       - benchmarks
-      - vault_integration_tests:
-          requires:
-            - refresh-cache
-      - consul_compatibility_tests:
-          requires:
-            - refresh-cache
+      - vault-integration-tests
+      - consul-compatibility-tests
     triggers:
       - schedule:
           # 02:10 UTC every Wednesday
