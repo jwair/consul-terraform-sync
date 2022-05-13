@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+set -e
+
+# ----------------- Functions ------------------
+
 function list_tests() {
     local build_tags=$1
     local pkg=$2
@@ -35,7 +39,15 @@ function join_lists() {
   done
 }
 
-# -----------------------------------
+function validate() {
+  local chunks_count=$1
+  if [ "${chunks_count}" -gt 10 ]; then
+    >&2 echo ">> ERROR: Chunks count (${chunks_count}) exceeded max value (10)"
+    exit 1
+  fi
+}
+
+# ----------------- Main Logic ------------------
 
 build_tags=$1
 package=$2
@@ -44,13 +56,12 @@ chunks_dir=$4
 
 all_tests_file=$(mktemp /tmp/split.XXXXX)
 
-if [ "${chunks_count}" -gt 10 ]; then
-  >&2 echo ">> ERROR: Max chunks_count (10) exceeded"
-  exit 1
-fi
-
+validate "${chunks_count}"
 list_tests "${build_tags}" "${package}" > "${all_tests_file}"
 split_list "${chunks_count}" "${all_tests_file}" "${chunks_dir}"
 join_lists "${chunks_dir}"
 
+# ----------------- Clean up ------------------
+
 rm "${all_tests_file}"
+unset build_tags package chunks_count chunks_dir
