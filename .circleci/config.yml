@@ -89,8 +89,6 @@ jobs:
     executor:
       name: go
     resource_class: medium+
-    requires:
-      - refresh-cache
     steps:
       - checkout
       - restore_cache:
@@ -124,8 +122,6 @@ jobs:
     executor:
       name: go
     resource_class: medium+
-    requires:
-      - refresh-cache
     steps:
       - checkout
       - restore_cache:
@@ -159,8 +155,6 @@ jobs:
     executor:
       name: go
     resource_class: medium+
-    requires:
-      - refresh-cache
     steps:
       - checkout
       - restore_cache:
@@ -324,9 +318,15 @@ workflows:
       - terraform-checks
       - compile_weekly_tests
       - unit_integration_tests
-      - e2e_tests_part_1
-      - e2e_tests_part_2
-      - e2e_tests_part_3
+      - e2e_tests_part_1:
+          requires:
+            - refresh-cache
+      - e2e_tests_part_2:
+          requires:
+            - refresh-cache
+      - e2e_tests_part_3:
+          requires:
+            - refresh-cache
   weekly-benchmarks:
     jobs:
       - vault_integration_tests
