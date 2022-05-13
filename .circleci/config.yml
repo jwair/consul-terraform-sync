@@ -21,6 +21,7 @@ executors:
 commands:
   setup-consul:
     steps:
+      - name: Setup Consul
       - run: |
           curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
           unzip consul.zip
@@ -28,6 +29,7 @@ commands:
 
   setup-terraform:
     steps:
+      - name: Setup Terraform
       - run: |
           curl -sLo terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
           unzip terraform.zip
@@ -35,6 +37,7 @@ commands:
 
   setup-vault:
     steps:
+      - name: Setup Vault
       - run: |
           curl -sLo vault.zip https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip
           unzip vault.zip
@@ -43,10 +46,11 @@ commands:
 
   setup-gotestsum:
     steps:
+      - name: Setup gotestsum
       - run: |
           curl -sLo gotestsum.tar.gz https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_linux_amd64.tar.gz
-            tar -xzf gotestsum.tar.gz gotestsum
-            sudo cp gotestsum /usr/local/bin/
+          tar -xzf gotestsum.tar.gz gotestsum
+          sudo cp gotestsum /usr/local/bin/
 
 jobs:
   unit-integration-tests:
