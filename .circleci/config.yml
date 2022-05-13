@@ -77,7 +77,8 @@ jobs:
       - run: |
           go test -count=1 -timeout=80s -tags 'integration vault' ./... -run Vault
 
-  e2e_tests_part_1:
+  e2e_tests:
+    name: e2e-tests-part-<< matrix.index >>
     executor:
       name: go
     resource_class: medium+
@@ -100,81 +101,7 @@ jobs:
           name: E2E tests
           command: |
             ./build-scripts/split-tests.sh e2e ./e2e ${E2E_TESTS_PARALLELISM} ${PWD}/.build/chunks
-            CHUNK_INDEX=0 make test-e2e-cirecleci
-      - store_test_results:
-          path: .build/test-results
-      - when:
-          condition:
-            or:
-              - equal: [ main, <<pipeline.git.branch>> ]
-              - matches: { pattern: "release/.+", value: <<pipeline.git.branch>> }
-          steps:
-            - slack/notify:
-                event: fail
-                template: basic_fail_1
-                branch_pattern: main,release/.+
-
-  e2e_tests_part_2:
-    executor:
-      name: go
-    resource_class: medium+
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - ct-modcache-v2-{{ checksum "go.mod" }}
-      - run:
-          name: Setup dependencies
-          command: |
-            curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
-            unzip consul.zip
-            sudo cp consul /usr/local/bin/
-            
-            curl -sLo gotestsum.tar.gz https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_linux_amd64.tar.gz
-            tar -xzf gotestsum.tar.gz gotestsum
-            sudo cp gotestsum /usr/local/bin/
-      - run:
-          name: E2E tests
-          command: |
-            ./build-scripts/split-tests.sh e2e ./e2e ${E2E_TESTS_PARALLELISM} ${PWD}/.build/chunks
-            CHUNK_INDEX=1 make test-e2e-cirecleci
-      - store_test_results:
-          path: .build/test-results
-      - when:
-          condition:
-            or:
-              - equal: [ main, <<pipeline.git.branch>> ]
-              - matches: { pattern: "release/.+", value: <<pipeline.git.branch>> }
-          steps:
-            - slack/notify:
-                event: fail
-                template: basic_fail_1
-                branch_pattern: main,release/.+
-
-  e2e_tests_part_3:
-    executor:
-      name: go
-    resource_class: medium+
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - ct-modcache-v2-{{ checksum "go.mod" }}
-      - run:
-          name: Setup dependencies
-          command: |
-            curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
-            unzip consul.zip
-            sudo cp consul /usr/local/bin/
-            
-            curl -sLo gotestsum.tar.gz https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_linux_amd64.tar.gz
-            tar -xzf gotestsum.tar.gz gotestsum
-            sudo cp gotestsum /usr/local/bin/
-      - run:
-          name: E2E tests
-          command: |
-            ./build-scripts/split-tests.sh e2e ./e2e ${E2E_TESTS_PARALLELISM} ${PWD}/.build/chunks
-            CHUNK_INDEX=2 make test-e2e-cirecleci
+            CHUNK_INDEX=<< matrix.index >> make test-e2e-cirecleci
       - store_test_results:
           path: .build/test-results
       - when:
@@ -318,15 +245,12 @@ workflows:
       - unit_integration_tests:
           requires:
             - refresh-cache
-      - e2e_tests_part_1:
+      - e2e_tests:
           requires:
             - refresh-cache
-      - e2e_tests_part_2:
-          requires:
-            - refresh-cache
-      - e2e_tests_part_3:
-          requires:
-            - refresh-cache
+          matrix:
+            parameters:
+              index: [ "0", "1", "2" ]
   weekly-benchmarks:
     jobs:
       - refresh-cache
