@@ -28,6 +28,7 @@ jobs:
           keys:
             - ct-modcache-v2-{{ checksum "go.mod" }}
       - run: |
+          echo $GOPATH
           go mod download
       - save_cache:
           key: ct-modcache-v2-{{ checksum "go.mod" }}
