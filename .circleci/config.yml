@@ -16,6 +16,7 @@ executors:
       TERRAFORM_VERSION: "1.0.8"
       VAULT_VERSION: "1.8.3"
       GOTESTSUM_VERSION: "1.8.1"
+      E2E_TESTS_PARALLELISM: "3"
 
 jobs:
   unit_integration_tests:
@@ -87,10 +88,10 @@ jobs:
           tar -xzf gotestsum.tar.gz gotestsum
           sudo cp gotestsum /usr/local/bin/
       - run: |
-          ./build-scripts/split-tests.sh e2e ./e2e 2 ${PWD}/.build/chunks
+          ./build-scripts/split-tests.sh e2e ./e2e ${E2E_TESTS_PARALLELISM} ${PWD}/.build/chunks
           CHUNK_INDEX=0 make test-e2e-cirecleci
       - store_test_results:
-          path: .build/test-results/e2e-tests-0.xml
+          path: .build/test-results
       - when:
           condition:
             or:
@@ -124,10 +125,47 @@ jobs:
           tar -xzf gotestsum.tar.gz gotestsum
           sudo cp gotestsum /usr/local/bin/
       - run: |
-          ./build-scripts/split-tests.sh e2e ./e2e 2 ${PWD}/.build/chunks
+          ./build-scripts/split-tests.sh e2e ./e2e ${E2E_TESTS_PARALLELISM} ${PWD}/.build/chunks
           CHUNK_INDEX=1 make test-e2e-cirecleci
       - store_test_results:
-          path: .build/test-results/e2e-tests-1.xml
+          path: .build/test-results
+      - when:
+          condition:
+            or:
+              - equal: [ main, <<pipeline.git.branch>> ]
+              - matches: { pattern: "release/.+", value: <<pipeline.git.branch>> }
+          steps:
+            - slack/notify:
+                event: fail
+                template: basic_fail_1
+                branch_pattern: main,release/.+
+      - save_cache:
+          key: ct-modcache-v2-{{ checksum "go.mod" }}
+          paths:
+            - /go/pkg/mod
+
+  e2e_tests_3:
+    executor:
+      name: go
+    resource_class: medium+
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - ct-modcache-v2-{{ checksum "go.mod" }}
+      - run: |
+          curl -sLo consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
+          unzip consul.zip
+          sudo cp consul /usr/local/bin/
+      - run: |
+          curl -sLo gotestsum.tar.gz https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_linux_amd64.tar.gz
+          tar -xzf gotestsum.tar.gz gotestsum
+          sudo cp gotestsum /usr/local/bin/
+      - run: |
+          ./build-scripts/split-tests.sh e2e ./e2e ${E2E_TESTS_PARALLELISM} ${PWD}/.build/chunks
+          CHUNK_INDEX=2 make test-e2e-cirecleci
+      - store_test_results:
+          path: .build/test-results
       - when:
           condition:
             or:
@@ -278,6 +316,7 @@ workflows:
       - unit_integration_tests
       - e2e_tests_1
       - e2e_tests_2
+      - e2e_tests_3
   weekly-benchmarks:
     jobs:
       - vault_integration_tests
