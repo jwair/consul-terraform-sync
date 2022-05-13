@@ -217,7 +217,7 @@ workflows:
           matrix:
             parameters:
               part_index: [ "0", "1", "2" ]
-              totals_total: [ "3" ]
+              parts_total: [ "3" ]
   weekly-benchmarks:
     jobs:
       - benchmarks
