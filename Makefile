@@ -106,9 +106,11 @@ generate:
 
 go-fmt-check:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
+.PHONY: go-fmt-check
 
 terraform-fmt-check:
 	@sh -c "'$(CURDIR)/scripts/terraformfmtcheck.sh'"
+.PHONY: terraform-fmt-check
 
 # temp noop command to get build pipeline working
 dev-tree:
@@ -121,5 +123,4 @@ ifneq (,$(wildcard version/version_ent.go))
 else
 	@$(CURDIR)/build-scripts/version.sh version/version.go
 endif
-
 .PHONY: version
