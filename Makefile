@@ -112,11 +112,6 @@ terraform-fmt-check:
 	@sh -c "'$(CURDIR)/scripts/terraformfmtcheck.sh'"
 .PHONY: terraform-fmt-check
 
-# temp noop command to get build pipeline working
-dev-tree:
-	@true
-.PHONY: dev-tree
-
 version:
 ifneq (,$(wildcard version/version_ent.go))
 	@$(CURDIR)/build-scripts/version.sh version/version_ent.go
