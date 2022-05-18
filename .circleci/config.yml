@@ -102,7 +102,7 @@ jobs:
           name: E2E tests
           command: |
             ./build-scripts/split-tests.sh e2e ./e2e ${E2E_TESTS_PARALLELISM} ${PWD}/.build/chunks
-            CHUNK_INDEX=<< parameters.part_index >> make test-e2e-cirecleci
+            CHUNK_INDEX=<< parameters.part_index >> make test-e2e-circleci
       - store_test_results:
           path: .build/test-results
       - when:

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 # ----------------- Functions ------------------
 
@@ -50,6 +50,11 @@ function validate() {
 }
 
 # ----------------- Main Logic ------------------
+
+if [ "$#" -ne 4 ]; then
+    >&2 echo ">> ERROR: Incorrect number of parameters. Usage: $0 <build-tags> <package> <chunks-count> <chunks-output-dir>"
+    exit 1
+fi
 
 build_tags=$1
 package=$2
