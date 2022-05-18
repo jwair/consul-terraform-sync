@@ -57,14 +57,16 @@ commands:
             sudo cp gotestsum /usr/local/bin/
 
 jobs:
-  integration-tests:
+  unit-and-integration-tests:
     executor:
       name: go
     steps:
       - checkout
       - setup-consul
       - run: |
-          make test-integration
+          make test-unit-and-integration
+      - store_test_results:
+          path: .build/test-results
       - when:
           condition:
             or:
@@ -216,7 +218,7 @@ workflows:
       - go-checks
       - terraform-checks
       - compile-weekly-tests
-      - integration-tests
+      - unit-and-integration-tests
       - e2e-tests:
           name: "E2E Tests - Part: << matrix.part_index >>"
           matrix:

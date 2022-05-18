@@ -35,17 +35,18 @@ dev:
 	@go install -ldflags "$(LD_FLAGS)" -tags '$(GOTAGS)'
 .PHONY: dev
 
-# test runs the test suite
+# test runs the unit tests
 test:
 	@echo "==> Testing ${NAME}"
 	@go test -count=1 -timeout=30s -cover ./... ${TESTARGS}
 .PHONY: test
 
-# test-integration runs the test suite and integration tests
-test-integration:
-	@echo "==> Testing ${NAME} (test suite & integration)"
-	@go test -count=1 -timeout=80s -tags=integration -cover ./... ${TESTARGS}
-.PHONY: test-all
+# test-unit-and-integration runs the unit and integration tests
+test-unit-and-integration:
+	@echo "==> Testing ${NAME} (unit & integration tests)"
+	@gotestsum --format testname --junitfile .build/test-results/unit-and-integration-tests.xml -- \
+		-count=1 -timeout=80s -tags=integration -cover ./... ${TESTARGS}
+.PHONY: test-unit-and-integration
 
 # test-setup-e2e sets up the sync binary and permissions to run in circle
 test-setup-e2e: dev
