@@ -44,7 +44,7 @@ test:
 # test-unit-and-integration runs the unit and integration tests
 test-unit-and-integration:
 	@echo "==> Testing ${NAME} (unit & integration tests)"
-	@mkdir .build/test-results
+	mkdir -p .build
 	@gotestsum --format testname --junitfile .build/test-results/unit-and-integration-tests.xml -- \
 		-count=1 -timeout=80s -tags=integration -cover ./... ${TESTARGS}
 .PHONY: test-unit-and-integration
