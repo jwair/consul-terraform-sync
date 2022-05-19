@@ -83,8 +83,7 @@ jobs:
     steps:
       - checkout
       - setup-vault
-      - run: |
-          go test -count=1 -timeout=80s -tags 'integration vault' ./... -run Vault
+      - run: go test -count=1 -timeout=80s -tags 'integration vault' ./... -run Vault
 
   e2e-tests:
     executor:
@@ -120,8 +119,7 @@ jobs:
       name: go
     steps:
       - checkout
-      - run: |
-          make test-compat
+      - run: make test-compat
       - slack/notify:
           event: fail
           template: basic_fail_1
@@ -150,8 +148,7 @@ jobs:
       - run:
           name: Run benchmark suite
           no_output_timeout: << parameters.no_output_timeout >>
-          command:
-            make test-benchmarks | /usr/bin/tee /tmp/benchmarks.json
+          command: make test-benchmarks | /usr/bin/tee /tmp/benchmarks.json
       - slack/notify:
           event: fail
           template: basic_fail_1
@@ -160,7 +157,7 @@ jobs:
           command: |
             mkdir /tmp/benchmark_results
             grep 'ns/op' /tmp/benchmarks.json | awk -F '"Output":"'  '{print $2}' | sort \
-             > /tmp/benchmark_results/results-${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}.txt
+              > /tmp/benchmark_results/results-${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}.txt
             cat /tmp/benchmark_results/results-${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}.txt
       - store_artifacts:
           path: /tmp/benchmarks.json
@@ -176,8 +173,7 @@ jobs:
       - checkout
       - run:
           name: Check that weekly tests can compile
-          command:
-            make compile-weekly-tests
+          command: make compile-weekly-tests
       - when:
           condition:
             or:

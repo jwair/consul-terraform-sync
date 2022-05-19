@@ -44,6 +44,7 @@ test:
 # test-unit-and-integration runs the unit and integration tests
 test-unit-and-integration:
 	@echo "==> Testing ${NAME} (unit & integration tests)"
+	@mkdir -p .build/test-results
 	@gotestsum --format testname --junitfile .build/test-results/unit-and-integration-tests.xml -- \
 		-count=1 -timeout=80s -tags=integration -cover ./... ${TESTARGS}
 .PHONY: test-unit-and-integration
@@ -79,7 +80,7 @@ test-benchmarks:
 	@go test -json ./e2e/benchmarks -timeout 2h -bench=. -tags e2e
 .PHONY: test-benchmarks
 
-# compile-weekly-tests is a check that our weekly-runned tests can compile. this
+# compile-weekly-tests is a check that our weekly-run tests can compile. this
 # will be called on a more frequent cadence than weekly
 compile-weekly-tests:
 	@echo "==> Running compile check for weekly tests for ${NAME}"
