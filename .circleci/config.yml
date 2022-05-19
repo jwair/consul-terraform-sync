@@ -63,8 +63,7 @@ jobs:
     steps:
       - checkout
       - setup-consul
-      - run: |
-          make test-unit-and-integration
+      - run: make test-unit-and-integration
       - store_test_results:
           path: .build/test-results
       - when:
