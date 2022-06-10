@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.78.0 // indirect
 	cloud.google.com/go/storage v1.13.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/PaloAltoNetworks/pango v0.5.1
+	github.com/PaloAltoNetworks/pango v0.8.0
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/aws/aws-sdk-go v1.37.19 // indirect
 	github.com/deepmap/oapi-codegen v1.11.0
